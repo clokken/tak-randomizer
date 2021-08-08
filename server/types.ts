@@ -13,9 +13,11 @@ export type ServerRoom = {
     options: RoomOptions;
     host: ServerRoomPlayer;
     guests: ServerRoomPlayer[];
+    isFrozen: boolean; // players cannot change team or ready status
 };
 
 export type ServerRoomPlayer = ServerPlayer & {
+    ready: boolean;
     race: string;
     team: Team;
 };

@@ -1,5 +1,5 @@
 import * as SocketIo from 'socket.io';
-import { MsgCurrentRoomClosed, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ReqJoinRoom, ReqLeaveRoom, ReqRoomInfo, ResCreateRoom, ResJoinRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
+import { MsgCurrentRoomClosed, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqChangeTeam, ReqCreateRoom, ReqJoinRoom, ReqLeaveRoom, ReqRoomInfo, ResChangeTeam, ResCreateRoom, ResJoinRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
 import { ServerPlayer, ServerRoom, ServerRoomPlayer } from './types';
 import { customAlphabet } from 'nanoid';
 import { RoomOptions } from '../src/lib/models/room-options';
@@ -65,6 +65,7 @@ export class MainServer {
                     host: this.createFreshRoomPlayer(currentPlayer, args.options),
                     guests: [],
                     options: args.options,
+                    isFrozen: false,
                 };
 
                 this.rooms.push(newRoom);
@@ -106,6 +107,34 @@ export class MainServer {
 
                 this.onPlayerLeaveRoom(currentPlayer, 'request');
                 cb({ type: 'success', result: 'OK' });
+            });
+
+            this.handleCb<ReqChangeTeam, ResChangeTeam>(socket, 'change-team', (args, cb) => {
+                if (currentPlayer.currentRoom === null) {
+                    cb({ type: 'error', reason: `You're not in a room.`});
+                    return;
+                }
+
+                if (currentPlayer.currentRoom.isFrozen) {
+                    return { type: 'error', reason: `Room is currently frozen.` };
+                }
+
+                const currentRoomPlayer = this.allRoomPlayers(currentPlayer.currentRoom).find(next => {
+                    return next.socket === socket;
+                });
+
+                if (!currentRoomPlayer)
+                    throw `Impossible...`;
+
+                currentRoomPlayer.team = args.newTeam;
+                cb({ type: 'success', result: 'OK' });
+
+                this.allRoomPlayers(currentPlayer.currentRoom).forEach(next => {
+                    this.notifyClient<MsgPlayerChangedTeam>(next.socket, 'player-changed-team', {
+                        playerName: currentPlayer.name,
+                        newTeam: args.newTeam,
+                    })
+                });
             });
         });
     }
@@ -183,6 +212,7 @@ export class MainServer {
         return {
             id: roomPlayer.socket.id,
             name: roomPlayer.name,
+            ready: roomPlayer.ready,
             race: roomPlayer.race,
             team: roomPlayer.team,
         };
@@ -219,6 +249,7 @@ export class MainServer {
 
         return {
             ...player,
+            ready: false,
             race: firstRace,
             team: null,
         };

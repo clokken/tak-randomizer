@@ -13,8 +13,10 @@ export type Room = {
 };
 
 export type RoomPlayer = Player & {
+    ready: boolean;
     race: string;
     team: Team;
 };
 
 export type Team = null | 1 | 2 | 3 | 4;
+export const Teams: Team[] = [null, 1, 2, 3, 4];

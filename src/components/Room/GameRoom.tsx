@@ -2,8 +2,8 @@ import { Card, Chip, Container, IconButton, Paper, Table, TableBody, TableCell, 
 import { Autorenew } from '@material-ui/icons';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
-import { Room } from '../../lib/protocol/common';
-import { ReqRoomInfo, ResRoomInfo } from '../../lib/protocol/messages';
+import { Room, Teams } from '../../lib/protocol/common';
+import { ReqChangeTeam, ReqRoomInfo, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
 import styles from './GameRoom.module.scss';
 
 type GameRoomProps = {
@@ -40,6 +40,9 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             'onCurrentRoomClosed': msg => {
                 updateRoom();
             },
+            'onPlayerChangedTeam': msg => {
+                updateRoom();
+            },
         };
 
         conn.setEventListener(eventListener);
@@ -49,9 +52,29 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         };
     }, [conn, updateRoom]);
 
+    const getPlayerMe = React.useCallback(() => {
+        if (!room)
+            return null;
+
+        return [room.host, ...room.guests].find(next => next.id === conn.myId);
+    }, [conn, room]);
+
     const onChangeTeam = React.useCallback(() => {
-        //
-    }, []);
+        if (!room)
+            return;
+
+        const playerMe = getPlayerMe();
+
+        if (!playerMe) {
+            // Impossible... how am I not in the room?
+            // TODO error handle
+            return;
+        }
+
+        conn.emit<ReqChangeTeam, ResChangeTeam>('change-team', {
+            newTeam: Teams[(Teams.indexOf(playerMe.team) + 1) % Teams.length],
+        });
+    }, [room, conn]);
 
     if (error !== null) {
         return (
@@ -111,13 +134,15 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                                     <TableCell>{next.race}</TableCell>
                                     <TableCell className={styles.TdTeam}>
                                         <div>
+                                            <div className={styles.TeamLabel}>
+                                                {next.team !== null && 'Team ' + next.team}
+                                            </div>
                                             {isMe && (<>
                                                 &nbsp;
                                                 <IconButton onClick={onChangeTeam}>
                                                     <Autorenew />
                                                 </IconButton>
                                             </>)}
-                                            {next.team !== null && 'Team ' + next.team}
                                         </div>
                                     </TableCell>
                                 </TableRow>

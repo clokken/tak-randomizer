@@ -1,6 +1,6 @@
 import * as SocketIo from 'socket.io-client';
 import { RoomOptions } from '../models/room-options';
-import { MsgCurrentRoomClosed, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ReqJoinRoom, ResCreateRoom, ResJoinRoom } from '../protocol/messages';
+import { MsgCurrentRoomClosed, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ReqJoinRoom, ResCreateRoom, ResJoinRoom } from '../protocol/messages';
 
 const serverPort = parseInt(process.env['REACT_APP_SERVER_PORT'] || '3003');
 
@@ -8,6 +8,7 @@ export type ClientConnectionEventListener = {
     onPlayerJoinedRoom: (msg: MsgPlayerJoinedRoom) => void;
     onPlayerLeftRoom: (msg: MsgPlayerLeftRoom) => void;
     onCurrentRoomClosed: (msg: MsgCurrentRoomClosed) => void;
+    onPlayerChangedTeam: (msg: MsgPlayerChangedTeam) => void;
 };
 
 export class ClientConnection {
@@ -32,6 +33,10 @@ export class ClientConnection {
 
         this.on<MsgCurrentRoomClosed>('current-room-closed', msg => {
             this.eventListener && this.eventListener.onCurrentRoomClosed(msg);
+        });
+
+        this.on<MsgPlayerChangedTeam>('player-changed-team', msg => {
+            this.eventListener && this.eventListener.onPlayerChangedTeam(msg);
         });
     }
 

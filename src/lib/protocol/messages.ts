@@ -1,5 +1,5 @@
 import { RoomOptions } from "../models/room-options";
-import { Room } from "./common";
+import { Room, Team } from "./common";
 
 type CommonResponse<ISuccess> = {
     type: 'success';
@@ -60,6 +60,36 @@ export type MsgPlayerLeftRoom = {
 
 export type MsgCurrentRoomClosed = {
     reason: string;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+export type ReqChangeTeam = {
+    newTeam: Team;
+};
+
+export type ResChangeTeam = CommonResponse<'OK'>;
+
+// -------------------------------------------------------------------------------------------------
+
+export type ReqChangeReady = {
+    isReady: boolean;
+};
+
+export type ResChangeReady = CommonResponse<'OK'>;
+
+// -------------------------------------------------------------------------------------------------
+
+export type MsgPlayerChangedTeam = {
+    playerName: string;
+    newTeam: Team;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+export type MsgPlayerChangedReady = {
+    playerName: string;
+    isReady: boolean;
 };
 
 // -------------------------------------------------------------------------------------------------
