@@ -1,6 +1,6 @@
 import * as SocketIo from 'socket.io-client';
 import { RoomOptions } from '../models/room-options';
-import { MsgCurrentRoomClosed, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ResCreateRoom } from '../protocol/messages';
+import { MsgCurrentRoomClosed, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ReqJoinRoom, ResCreateRoom, ResJoinRoom } from '../protocol/messages';
 
 const serverPort = parseInt(process.env['REACT_APP_SERVER_PORT'] || '3003');
 
@@ -11,12 +11,14 @@ export type ClientConnectionEventListener = {
 };
 
 export class ClientConnection {
+    readonly nickname: string;
     private socket: SocketIo.Socket;
     readonly roomId: string;
 
     private eventListener: ClientConnectionEventListener | null = null;
 
-    private constructor(socket: SocketIo.Socket, roomId: string) {
+    private constructor(nickname: string, socket: SocketIo.Socket, roomId: string) {
+        this.nickname = nickname;
         this.socket = socket;
         this.roomId = roomId;
 
@@ -33,24 +35,47 @@ export class ClientConnection {
         });
     }
 
-    static async createRoom(playerName: string, options: RoomOptions, onDisconnect: () => void):
+    static async createRoom(nickname: string, options: RoomOptions, onDisconnect: () => void):
         Promise<ClientConnection>
     {
         const socket = SocketIo.io(`localhost:${serverPort}`, {
-            query: { name: playerName },
+            query: { name: nickname },
             reconnection: false,
         });
 
-        socket.on('disconnect', () => {
-            onDisconnect();
-        });
+        socket.on('disconnect', onDisconnect);
 
         return new Promise((resolve, reject) => {
             socket.on('connect', () => {
                 emit<ReqCreateRoom, ResCreateRoom>(socket, 'create-room', { options }).then(ack => {
-                    console.log(ack);
                     if (ack.type === 'success')
-                        resolve(new ClientConnection(socket, ack.result.id));
+                        resolve(new ClientConnection(nickname, socket, ack.result.id));
+                    else
+                        reject(ack.reason);
+                });
+            });
+
+            socket.on('connect_failed', () => {
+                reject('Failed to connect socket.');
+            });
+        });
+    }
+
+    static async joinRoom(nickname: string, roomId: string, onDisconnect: () => void):
+        Promise<ClientConnection>
+    {
+        const socket = SocketIo.io(`localhost:${serverPort}`, {
+            query: { name: nickname },
+            reconnection: false,
+        });
+
+        socket.on('disconnect', onDisconnect);
+
+        return new Promise((resolve, reject) => {
+            socket.on('connect', () => {
+                emit<ReqJoinRoom, ResJoinRoom>(socket, 'join-room', { roomId }).then(ack => {
+                    if (ack.type === 'success')
+                        resolve(new ClientConnection(nickname, socket, roomId));
                     else
                         reject(ack.reason);
                 });

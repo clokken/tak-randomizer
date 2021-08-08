@@ -22,6 +22,12 @@ const HostRoom: React.FC = () => {
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
+    const mounted = React.useRef(false);
+    React.useEffect(() => {
+        mounted.current = true;
+        return () => { mounted.current = false; };
+    }, []);
+
     const nicknameHeader = React.useMemo(() => {
         if (nickname === null)
             return null;
@@ -30,15 +36,13 @@ const HostRoom: React.FC = () => {
     }, [nickname]);
 
     const doHostRoom = React.useCallback((options: RoomOptions) => {
-        let mounted = true;
-
         if (nickname === null)
             return;
 
         setLoading(true);
 
         const onDisconnect = () => {
-            if (!mounted) {
+            if (!mounted.current) {
                 return;
             }
 
@@ -48,7 +52,7 @@ const HostRoom: React.FC = () => {
         };
 
         ClientConnection.createRoom(nickname, options, onDisconnect).then(conn => {
-            if (!mounted) {
+            if (!mounted.current) {
                 conn.destroy();
                 return;
             }
@@ -57,34 +61,21 @@ const HostRoom: React.FC = () => {
             setWindowState({ currentRoom: {id: conn.roomId, name: options.name} });
             setLoading(false);
         }).catch(err => {
-            if (!mounted) {
+            if (!mounted.current) {
                 return;
             }
 
             setError(err + '');
             setLoading(false);
         });
-
-        return () => {
-            mounted = false;
-        };
     }, [nickname]);
 
     React.useEffect(() => {
-        if (windowState.currentRoom) {
-            window.history.pushState(
-                null,
-                document.title = 'TA:K Randomizer | ' + windowState.currentRoom.name,
-                '/' + windowState.currentRoom.id
-            );
-        }
-        else {
-            window.history.pushState(
-                null,
-                document.title = 'TA:K Randomizer',
-                '/'
-            );
-        }
+        window.history.pushState(
+            null,
+            '',
+            '/' + (windowState.currentRoom ? windowState.currentRoom.id : '')
+        );
     }, [windowState]);
 
     if (loading) {

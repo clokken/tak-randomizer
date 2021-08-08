@@ -46,7 +46,7 @@ export class MainServer {
 
                 return room
                     ? { type: 'success', result: this.serverRoomToCommonRoom(room) }
-                    : { type: 'error', reason: `ID not found.` };
+                    : { type: 'error', reason: `Room ID not found.` };
             });
 
             this.handle<ReqCreateRoom, ResCreateRoom>(socket, 'create-room', async args => {
@@ -82,7 +82,7 @@ export class MainServer {
                 const room = this.rooms.find(r => r.id === args.roomId);
 
                 if (!room) {
-                    cb({ type: 'error', reason: `ID not found.` });
+                    cb({ type: 'error', reason: `Room ID not found.` });
                     return;
                 }
 
