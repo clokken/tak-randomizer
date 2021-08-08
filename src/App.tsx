@@ -1,26 +1,41 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './App.scss';
+import { createTheme, ThemeProvider } from '@material-ui/core';
+import * as Colors from '@material-ui/core/colors';
+import Header from './components/Header/Header';
+import Body from './components/Body/Body';
+
+export const PathContext = React.createContext('');
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const theme = createTheme({
+        palette: {
+            primary: {
+                main: Colors.blue[700],
+                dark: Colors.blue[800],
+                light: Colors.blue[600],
+            },
+        },
+    });
+
+    let path = window.location.pathname;
+    if (path.startsWith('/'))
+        path = path.substring(1);
+
+    return (<>
+        {/* <head>
+            <meta
+                name="viewport"
+                content="minimum-scale=1, initial-scale=1, width=device-width"
+            />
+        </head> */}
+        <ThemeProvider theme={theme}>
+            <PathContext.Provider value={path}>
+                <Header />
+                <Body />
+            </PathContext.Provider>
+        </ThemeProvider>
+    </>);
 }
 
 export default App;

@@ -1,0 +1,13 @@
+.Root {
+    margin-bottom: 2rem;
+}
+
+.Title {
+    flex-grow: 1;
+}
+
+.Button {
+    &+.Button {
+        margin-left: 1rem;
+    }
+}

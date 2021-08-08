@@ -1,0 +1,222 @@
+import * as SocketIo from 'socket.io';
+import { MsgCurrentRoomClosed, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqCreateRoom, ReqJoinRoom, ReqLeaveRoom, ReqRoomInfo, ResCreateRoom, ResJoinRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
+import { ServerPlayer, ServerRoom, ServerRoomPlayer } from './types';
+import { customAlphabet } from 'nanoid';
+import { RoomOptions } from '../src/lib/models/room-options';
+import { Player, Room, RoomPlayer } from '../src/lib/protocol/common';
+
+const roomIdLength = process.env['ROOM_ID_LENGTH'] || '10';
+
+const nanoid = customAlphabet('1234567890abcdef', parseInt(roomIdLength));
+
+// -------------------------------------------------------------------------------------------------
+
+export class MainServer {
+    private io: SocketIo.Server;
+
+    private rooms: ServerRoom[] = [];
+
+    constructor(io: SocketIo.Server) {
+        this.io = io;
+    }
+
+    async start() {
+        this.io.on('connection', socket => {
+            const name = socket.handshake.query.name;
+
+            if (!name || typeof name !== 'string') {
+                socket.disconnect(true);
+                return;
+            }
+
+            const currentPlayer: ServerPlayer = {
+                socket: socket,
+                name: name,
+                currentRoom: null,
+            };
+
+            socket.on('disconnect', () => {
+                if (currentPlayer.currentRoom) {
+                    this.onPlayerLeaveRoom(currentPlayer, 'disconnect');
+                }
+            });
+
+            this.handle<ReqRoomInfo, ResRoomInfo>(socket, 'room-info', async args => {
+                const room = this.rooms.find(r => r.id === args.roomId);
+
+                return room
+                    ? { type: 'success', result: this.serverRoomToCommonRoom(room) }
+                    : { type: 'error', reason: `ID not found.` };
+            });
+
+            this.handle<ReqCreateRoom, ResCreateRoom>(socket, 'create-room', async args => {
+                if (currentPlayer.currentRoom !== null) {
+                    return { type: 'error', reason: `You're already in a room.` };
+                }
+
+                const newRoom: ServerRoom = {
+                    id: this.createUniqueId(),
+                    host: this.createFreshRoomPlayer(currentPlayer, args.options),
+                    guests: [],
+                    options: args.options,
+                };
+
+                this.rooms.push(newRoom);
+                currentPlayer.currentRoom = newRoom;
+
+                return { type: 'success', result: { id: newRoom.id } };
+            });
+
+            this.handleCb<ReqJoinRoom, ResJoinRoom>(socket, 'join-room', (args, cb) => {
+                if (currentPlayer.currentRoom !== null) {
+                    cb({ type: 'error', reason: `You're already in a room.` });
+                    return;
+                }
+
+                const room = this.rooms.find(r => r.id === args.roomId);
+
+                if (!room) {
+                    cb({ type: 'error', reason: `ID not found.` });
+                    return;
+                }
+
+                room.guests.push(this.createFreshRoomPlayer(currentPlayer, room.options));
+                currentPlayer.currentRoom = room;
+
+                cb({ type: 'success', result: 'OK' });
+
+                this.allRoomPlayers(room).forEach(next => {
+                    this.notifyClient<MsgPlayerJoinedRoom>(next.socket, 'player-joined-room', {
+                        playerName: currentPlayer.name,
+                    });
+                });
+            });
+
+            this.handleCb<ReqLeaveRoom, ResLeaveRoom>(socket, 'leave-room', (args, cb) => {
+                if (currentPlayer.currentRoom === null) {
+                    cb({ type: 'error', reason: `You're not in a room.`});
+                    return;
+                }
+
+                this.onPlayerLeaveRoom(currentPlayer, 'request');
+                cb({ type: 'success', result: 'OK' });
+            });
+        });
+    }
+
+    private handle<IArgs, IAck>(client: SocketIo.Socket, eventName: string,
+        handler: (args: IArgs) => Promise<IAck>)
+    {
+        client.on(eventName, (args: IArgs, callback: (ack: IAck) => void) => {
+            handler(args).then(callback);
+        });
+    }
+
+    private handleCb<IArgs, IAck>(client: SocketIo.Socket, eventName: string,
+        handler: (args: IArgs, callback: (ack: IAck) => void) => void)
+    {
+        client.on(eventName, (args: IArgs, callback: (ack: IAck) => void) => {
+            handler(args, callback);
+        });
+    }
+
+    private onPlayerLeaveRoom(player: ServerPlayer, reason: 'disconnect' | 'request') {
+        if (!player.currentRoom)
+            throw `Player isn't in a room.`;
+
+        const room = player.currentRoom;
+        player.currentRoom = null;
+
+        if (room.host.socket === player.socket) { // is host
+            room.guests.forEach(next => {
+                next.currentRoom = null;
+
+                this.notifyClient<MsgCurrentRoomClosed>(next.socket, 'current-room-closed', {
+                    reason: reason === 'disconnect'
+                        ? `Host disconnected.`
+                        : `Host left the room.`,
+                });
+            });
+
+            for (let i = 0; i < this.rooms.length; i++) {
+                if (this.rooms[i] === room) {
+                    this.rooms.splice(i, 1);
+                    return;
+                }
+            }
+
+            throw `Room is not in the room list... how???`;
+        }
+
+        for (let i = 0; i < room.guests.length; i++) {
+            if (room.guests[i].socket === player.socket) {
+                room.guests.splice(i, 1);
+
+                this.allRoomPlayers(room).forEach(next => {
+                    this.notifyClient<MsgPlayerLeftRoom>(next.socket, 'player-left-room', {
+                        playerName: player.name,
+                        disconnected: reason === 'disconnect',
+                    });
+                });
+
+                return;
+            }
+        }
+
+        throw `Player is not in the guest list... how???`;
+    }
+
+    private serverPlayerToCommonPlayer(player: ServerPlayer): Player {
+        return {
+            id: player.socket.id,
+            name: player.name,
+        };
+    }
+
+    private serverRoomPlayerToCommonRoomPlayer(roomPlayer: ServerRoomPlayer): RoomPlayer {
+        return {
+            id: roomPlayer.socket.id,
+            name: roomPlayer.name,
+            race: roomPlayer.race,
+            team: roomPlayer.team,
+        };
+    }
+
+    private serverRoomToCommonRoom(room: ServerRoom): Room {
+        return {
+            id: room.id,
+            options: room.options,
+            host: this.serverRoomPlayerToCommonRoomPlayer(room.host),
+            guests: room.guests.map(this.serverRoomPlayerToCommonRoomPlayer),
+        };
+    }
+
+    private createUniqueId() {
+        for (let i = 0; i < 10; i++) { // 10 = limit number of trials
+            const next = nanoid();
+            if (this.rooms.find(r => r.id === next) === undefined)
+                return next;
+        }
+
+        throw 'What???';
+    }
+
+    private createFreshRoomPlayer(player: ServerPlayer, roomOptions: RoomOptions): ServerRoomPlayer {
+        return {
+            ...player,
+            race: 'TODO: DEFAULT RACE',
+            team: null,
+        };
+    }
+
+    private allRoomPlayers(room: ServerRoom): ServerRoomPlayer[] {
+        return [
+            room.host,
+            ...room.guests,
+        ];
+    }
+
+    private notifyClient<IMessage>(client: SocketIo.Socket, eventName: string, message: IMessage) {
+        client.emit(eventName, message);
+    }
+}
