@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Grid } from '@material-ui/core';
 import { ClientConnection } from '../../lib/client/client-connection';
-import NicknameHeader from '../Common/NicknameHeader';
+// import NicknameHeader from '../Common/NicknameHeader';
 import NicknameForm from '../Common/NicknameForm';
 import GameRoom from '../Room/GameRoom';
 // import styles from './JoinRoom.module.scss';
@@ -21,12 +21,12 @@ const JoinRoom: React.FC<JoinRoomProps> = (props) => {
         return () => { mounted.current = false; };
     }, []);
 
-    const nicknameHeader = React.useMemo(() => {
+    /*const nicknameHeader = React.useMemo(() => {
         if (connection === null)
             return null;
 
         return <NicknameHeader nickname={connection.nickname} />
-    }, [connection]);
+    }, [connection]);*/
 
     const onSetNickname = React.useCallback((nickname: string) => {
         setLoading(true);
@@ -56,7 +56,7 @@ const JoinRoom: React.FC<JoinRoomProps> = (props) => {
             setError(err + '');
             setLoading(false);
         });
-    }, []);
+    }, [props.id]);
 
     if (loading) {
         return (

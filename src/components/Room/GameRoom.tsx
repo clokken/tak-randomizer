@@ -1,9 +1,9 @@
-import { Card, Chip, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
+import { Card, Checkbox, Chip, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { Autorenew } from '@material-ui/icons';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
-import { ReqChangeTeam, ReqRoomInfo, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
+import { ReqChangeReady, ReqChangeTeam, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
 import styles from './GameRoom.module.scss';
 
 type GameRoomProps = {
@@ -15,6 +15,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
 
     const [room, setRoom] = React.useState<Room | null>(null); // null = initial load
     const [error, setError] = React.useState<string | null>(null);
+    const [freezeInputs, setFreezeInputs] = React.useState(false);
 
     const updateRoom = React.useCallback(() => { // TODO handle component dismounting during async?
         conn.emit<ReqRoomInfo, ResRoomInfo>('room-info', {roomId: conn.roomId}).then(res => {
@@ -43,6 +44,9 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             'onPlayerChangedTeam': msg => {
                 updateRoom();
             },
+            'onPlayerChangedReady': msg => {
+                updateRoom();
+            },
         };
 
         conn.setEventListener(eventListener);
@@ -60,8 +64,10 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     }, [conn, room]);
 
     const onChangeTeam = React.useCallback(() => {
-        if (!room)
+        if (!room || freezeInputs)
             return;
+
+        setFreezeInputs(true);
 
         const playerMe = getPlayerMe();
 
@@ -73,8 +79,31 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
 
         conn.emit<ReqChangeTeam, ResChangeTeam>('change-team', {
             newTeam: Teams[(Teams.indexOf(playerMe.team) + 1) % Teams.length],
+        }).finally(() => {
+            setFreezeInputs(false);
         });
-    }, [room, conn]);
+    }, [room, conn, freezeInputs, getPlayerMe]);
+
+    const onChangeReady = React.useCallback((isReady: boolean) => {
+        if (!room || freezeInputs)
+            return;
+
+        setFreezeInputs(true);
+
+        const playerMe = getPlayerMe();
+
+        if (!playerMe) {
+            // Impossible... how am I not in the room?
+            // TODO error handle
+            return;
+        }
+
+        conn.emit<ReqChangeReady, ResChangeReady>('change-ready', {
+            isReady: isReady,
+        }).finally(() => {
+            setFreezeInputs(false);
+        });
+    }, [room, conn, freezeInputs, getPlayerMe]);
 
     if (error !== null) {
         return (
@@ -119,7 +148,16 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
 
                             return (
                                 <TableRow key={idx}>
-                                    <TableCell align="center"></TableCell>
+                                    <TableCell align="center">
+                                        <Checkbox
+                                            color="primary"
+                                            checked={next.ready}
+                                            onChange={e => {
+                                                if (isMe)
+                                                    onChangeReady(e.target.checked);
+                                            }}
+                                        />
+                                    </TableCell>
                                     <TableCell>
                                         {next.name}
                                         {isMe && (<>

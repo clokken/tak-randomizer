@@ -1,5 +1,5 @@
 import * as SocketIo from 'socket.io';
-import { MsgCurrentRoomClosed, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqChangeTeam, ReqCreateRoom, ReqJoinRoom, ReqLeaveRoom, ReqRoomInfo, ResChangeTeam, ResCreateRoom, ResJoinRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
+import { MsgCurrentRoomClosed, MsgPlayerChangedReady, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, ReqChangeReady, ReqChangeTeam, ReqCreateRoom, ReqJoinRoom, ReqLeaveRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResCreateRoom, ResJoinRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
 import { ServerPlayer, ServerRoom, ServerRoomPlayer } from './types';
 import { customAlphabet } from 'nanoid';
 import { RoomOptions } from '../src/lib/models/room-options';
@@ -116,7 +116,8 @@ export class MainServer {
                 }
 
                 if (currentPlayer.currentRoom.isFrozen) {
-                    return { type: 'error', reason: `Room is currently frozen.` };
+                    cb({ type: 'error', reason: `Room is currently frozen.` });
+                    return;
                 }
 
                 const currentRoomPlayer = this.allRoomPlayers(currentPlayer.currentRoom).find(next => {
@@ -133,6 +134,35 @@ export class MainServer {
                     this.notifyClient<MsgPlayerChangedTeam>(next.socket, 'player-changed-team', {
                         playerName: currentPlayer.name,
                         newTeam: args.newTeam,
+                    })
+                });
+            });
+
+            this.handleCb<ReqChangeReady, ResChangeReady>(socket, 'change-ready', (args, cb) => {
+                if (currentPlayer.currentRoom === null) {
+                    cb({ type: 'error', reason: `You're not in a room.`});
+                    return;
+                }
+
+                if (currentPlayer.currentRoom.isFrozen) {
+                    cb({ type: 'error', reason: `Room is currently frozen.` });
+                    return;
+                }
+
+                const currentRoomPlayer = this.allRoomPlayers(currentPlayer.currentRoom).find(next => {
+                    return next.socket === socket;
+                });
+
+                if (!currentRoomPlayer)
+                    throw `Impossible...`;
+
+                currentRoomPlayer.ready = args.isReady;
+                cb({ type: 'success', result: 'OK' });
+
+                this.allRoomPlayers(currentPlayer.currentRoom).forEach(next => {
+                    this.notifyClient<MsgPlayerChangedReady>(next.socket, 'player-changed-ready', {
+                        playerName: currentPlayer.name,
+                        isReady: args.isReady,
                     })
                 });
             });
