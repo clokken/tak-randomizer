@@ -9,3 +9,12 @@
 .TableHead th {
     font-weight: bold;
 }
+
+.TdReady {
+    width: 1%;
+}
+
+.TdTeam > div {
+    display: flex;
+    align-items: center;
+}

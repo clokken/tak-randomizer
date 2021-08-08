@@ -87,6 +87,10 @@ export class ClientConnection {
         });
     }
 
+    get myId() {
+        return this.socket.id;
+    }
+
     setEventListener(el: ClientConnectionEventListener | null) {
         this.eventListener = el;
     }

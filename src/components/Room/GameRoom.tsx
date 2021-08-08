@@ -1,4 +1,5 @@
-import { Card, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
+import { Card, Chip, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
+import { Autorenew } from '@material-ui/icons';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room } from '../../lib/protocol/common';
@@ -48,6 +49,10 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         };
     }, [conn, updateRoom]);
 
+    const onChangeTeam = React.useCallback(() => {
+        //
+    }, []);
+
     if (error !== null) {
         return (
             <Container>
@@ -70,9 +75,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         );
     }
 
-    const players = [room.host, ...room.guests].map(next => {
-        return { name: next.name, race: next.race, team: next.team };
-    });
+    const players = [room.host, ...room.guests];
 
     const roomTable = (
         <div>
@@ -80,21 +83,46 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 <Table className={styles.Table}>
                     <TableHead className={styles.TableHead}>
                         <TableRow>
-                            <TableCell>Ready</TableCell>
+                            <TableCell className={styles.TdReady}>Ready</TableCell>
                             <TableCell>Player</TableCell>
                             <TableCell>Race</TableCell>
                             <TableCell>Team</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {players.map(({ name, race, team }, idx) => (
-                            <TableRow key={idx}>
-                                <TableCell align="center"></TableCell>
-                                <TableCell>{name}</TableCell>
-                                <TableCell>{race}</TableCell>
-                                <TableCell>{team}</TableCell>
-                            </TableRow>
-                        ))}
+                        {players.map((next, idx) => {
+                            const isHost = room.host === next;
+                            const isMe = next.id === conn.myId;
+
+                            return (
+                                <TableRow key={idx}>
+                                    <TableCell align="center"></TableCell>
+                                    <TableCell>
+                                        {next.name}
+                                        {isMe && (<>
+                                            &nbsp;
+                                            <Chip label="YOU" color="secondary" />
+                                        </>)}
+                                        {isHost && (<>
+                                            &nbsp;
+                                            <Chip label="HOST" color="primary" />
+                                        </>)}
+                                    </TableCell>
+                                    <TableCell>{next.race}</TableCell>
+                                    <TableCell className={styles.TdTeam}>
+                                        <div>
+                                            {isMe && (<>
+                                                &nbsp;
+                                                <IconButton onClick={onChangeTeam}>
+                                                    <Autorenew />
+                                                </IconButton>
+                                            </>)}
+                                            {next.team !== null && 'Team ' + next.team}
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </TableContainer>
