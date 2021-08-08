@@ -6,7 +6,12 @@ const serverPort = process.env['SERVER_PORT'] || '3000';
 
 const start = async () => {
     const http = Http.createServer();
-    const io = new SocketIo.Server(http);
+    const io = new SocketIo.Server(http, {
+        cors: {
+            origin: "http://localhost:3000", // TODO
+            methods: ["GET", "POST"]
+        },
+    });
 
     const server = new MainServer(io);
 

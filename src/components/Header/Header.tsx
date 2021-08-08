@@ -14,7 +14,7 @@ const Header: React.FC<HeaderProps> = (props) => {
                     TA:K Race Randomizer
                 </Typography>
 
-                <Button color="inherit" className={styles.Button}>
+                <Button color="inherit" className={styles.Button} href="/">
                     New Room
                 </Button>
 

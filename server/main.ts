@@ -54,6 +54,12 @@ export class MainServer {
                     return { type: 'error', reason: `You're already in a room.` };
                 }
 
+                const invalid = this.validateRoomOptions(args.options);
+
+                if (invalid !== true) {
+                    return { type: 'error', reason: invalid };
+                }
+
                 const newRoom: ServerRoom = {
                     id: this.createUniqueId(),
                     host: this.createFreshRoomPlayer(currentPlayer, args.options),
@@ -201,10 +207,19 @@ export class MainServer {
         throw 'What???';
     }
 
+    private validateRoomOptions(roomOptions: RoomOptions): true | string {
+        // TODO check stuff like if there's at least ONE race option enabled
+        return true;
+    }
+
     private createFreshRoomPlayer(player: ServerPlayer, roomOptions: RoomOptions): ServerRoomPlayer {
+        const firstRace = Object.entries(roomOptions.raceToggles).find(([ _, enabled ]) => {
+            return enabled;
+        })![0];
+
         return {
             ...player,
-            race: 'TODO: DEFAULT RACE',
+            race: firstRace,
             team: null,
         };
     }
