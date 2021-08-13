@@ -17,7 +17,7 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
     const isHostMe = props.room.host === playerMe;
 
     const launchReadyEnabled = isHostMe
-        ? (players.length > 1 && players.every(player => player.ready))
+        ? (props.room.guests.length > 0 && props.room.guests.every(player => player.ready))
         : true;
 
     const onClickLaunchReady = () => {
