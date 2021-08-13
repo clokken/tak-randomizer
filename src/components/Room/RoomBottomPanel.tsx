@@ -1,6 +1,5 @@
 import { Button } from '@material-ui/core';
 import React from 'react';
-import { ClientConnection } from '../../lib/client/client-connection';
 import { Room } from '../../lib/protocol/common';
 import styles from './RoomBottomPanel.module.scss';
 

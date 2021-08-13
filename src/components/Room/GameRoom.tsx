@@ -3,7 +3,7 @@ import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
 import { ReqChangeReady, ReqChangeTeam, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
-import styles from './GameRoom.module.scss';
+// import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
 import RoomTable from './RoomTable';
 

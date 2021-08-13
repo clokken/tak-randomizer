@@ -22,7 +22,7 @@ const Logo: React.FC = () => {
 
     React.useEffect(() => {
         if ((STRIDE / step) % 1 !== 0 || (STRIDE / 2 / step) % 1 !== 0) {
-            throw `"STRIDE" (${STRIDE}) isn't evenly divided by "step" (${step})!`;
+            throw new Error(`"STRIDE" (${STRIDE}) isn't evenly divided by "step" (${step})!`);
         }
     }, []);
 
@@ -63,7 +63,7 @@ const Logo: React.FC = () => {
         return () => {
             clearInterval(handle);
         };
-    }, [slide1Ref.current, slide2Ref.current, img1Ref.current, img2Ref.current]);
+    }, [slide1Ref, slide2Ref, img1Ref, img2Ref]);
 
     return (
         <div className={styles.Root}>

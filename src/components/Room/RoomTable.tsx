@@ -1,8 +1,7 @@
-import { Checkbox, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
+import { Checkbox, Chip, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
 import { Autorenew } from '@material-ui/icons';
 import React from 'react';
-import { ClientConnection } from '../../lib/client/client-connection';
-import { Room, RoomPlayer } from '../../lib/protocol/common';
+import { Room } from '../../lib/protocol/common';
 import styles from './RoomTable.module.scss';
 
 type RoomTableProps = {

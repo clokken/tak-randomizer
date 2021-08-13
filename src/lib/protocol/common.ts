@@ -13,7 +13,7 @@ export type Room = {
 };
 
 export type RoomPlayer = Player & {
-    ready: boolean;
+    ready: boolean; // should be IGNORED for the room's host. (client should always show as checked)
     race: string;
     team: Team;
 };
