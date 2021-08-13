@@ -129,6 +129,7 @@ export class MainServer {
                     throw `Impossible...`;
 
                 currentRoomPlayer.team = args.newTeam;
+                currentRoomPlayer.ready = false;
                 cb({ type: 'success', result: 'OK' });
 
                 this.allRoomPlayers(currentPlayer.currentRoom).forEach(next => {
@@ -212,6 +213,7 @@ export class MainServer {
                 const result: RandomizationResult = {};
                 allRoomPlayers.forEach((player, idx) => {
                     result[player.socket.id] = { race: 'TODO #' + idx };
+                    player.ready = false;
                 });
 
                 cb({ type: 'success', result: 'OK' });
