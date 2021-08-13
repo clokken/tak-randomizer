@@ -10,6 +10,7 @@ export type Room = {
     options: RoomOptions;
     host: RoomPlayer;
     guests: RoomPlayer[];
+    historyCount: number;
 };
 
 export type RoomPlayer = Player & {
@@ -17,6 +18,10 @@ export type RoomPlayer = Player & {
     race: string;
     team: Team;
 };
+
+export type RandomizationResult = Record<string, { // key = ServerRoomPlayer::socket.id
+    race: string;
+}>;
 
 export type Team = null | 1 | 2 | 3 | 4;
 export const Teams: Team[] = [null, 1, 2, 3, 4];

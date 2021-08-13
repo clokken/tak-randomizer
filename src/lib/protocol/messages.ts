@@ -1,5 +1,5 @@
 import { RoomOptions } from "../models/room-options";
-import { Room, Team } from "./common";
+import { RandomizationResult, Room, Team } from "./common";
 
 type CommonResponse<ISuccess> = {
     type: 'success';
@@ -90,6 +90,21 @@ export type MsgPlayerChangedTeam = {
 export type MsgPlayerChangedReady = {
     playerName: string;
     isReady: boolean;
+};
+
+// -------------------------------------------------------------------------------------------------
+
+export type ReqLaunchRoom = {
+    //
+};
+
+export type ResLaunchRoom = CommonResponse<'OK'>;
+
+// -------------------------------------------------------------------------------------------------
+
+export type MsgRoomLaunched = {
+    whenIso: string; // Date::toISOString();
+    result: RandomizationResult;
 };
 
 // -------------------------------------------------------------------------------------------------

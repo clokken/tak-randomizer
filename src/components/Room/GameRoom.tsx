@@ -2,7 +2,7 @@ import { Card, Container } from '@material-ui/core';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
-import { ReqChangeReady, ReqChangeTeam, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
+import { ReqChangeReady, ReqChangeTeam, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
 // import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
 import RoomTable from './RoomTable';
@@ -46,6 +46,12 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 updateRoom();
             },
             'onPlayerChangedReady': msg => {
+                updateRoom();
+            },
+            'onRoomLaunched': msg => {
+                alert('Room has been launched!!!');
+                console.log(msg.whenIso);
+                console.log(msg.result);
                 updateRoom();
             },
         };
@@ -107,7 +113,14 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     }, [room, conn, freezeInputs, getPlayerMe]);
 
     const onLaunch = React.useCallback(() => {
-        //
+        setFreezeInputs(true);
+
+        conn.emit<ReqLaunchRoom, ResLaunchRoom>('launch-room', {}).catch(err => {
+            // TODO handle err
+            console.error(err);
+        }).finally(() => {
+            setFreezeInputs(false);
+        });
     }, []);
 
     if (error !== null) {

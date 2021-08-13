@@ -1,6 +1,6 @@
 import { RoomOptions } from "../src/lib/models/room-options";
 import * as SocketIo from 'socket.io';
-import { Team } from "../src/lib/protocol/common";
+import { RandomizationResult, Team } from "../src/lib/protocol/common";
 
 export type ServerPlayer = {
     socket: SocketIo.Socket;
@@ -14,6 +14,7 @@ export type ServerRoom = {
     host: ServerRoomPlayer;
     guests: ServerRoomPlayer[];
     isFrozen: boolean; // players cannot change team or ready status
+    history: RandomizationResult[];
 };
 
 export type ServerRoomPlayer = ServerPlayer & {
