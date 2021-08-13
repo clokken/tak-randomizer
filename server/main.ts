@@ -197,6 +197,11 @@ export class MainServer {
                 if (!currentRoomPlayer)
                     throw `Impossible...`;
 
+                if (currentRoomPlayer !== room.host) {
+                    cb({ type: 'error', reason: `You're not the room's host...` });
+                    return;
+                }
+
                 const notReady = room.guests.find(guest => !guest.ready);
 
                 if (notReady) {
