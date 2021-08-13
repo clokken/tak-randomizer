@@ -1,10 +1,11 @@
-import { Card, Checkbox, Chip, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@material-ui/core';
-import { Autorenew } from '@material-ui/icons';
+import { Card, Container } from '@material-ui/core';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
 import { ReqChangeReady, ReqChangeTeam, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResRoomInfo } from '../../lib/protocol/messages';
 import styles from './GameRoom.module.scss';
+import RoomBottomPanel from './RoomBottomPanel';
+import RoomTable from './RoomTable';
 
 type GameRoomProps = {
     connection: ClientConnection;
@@ -105,6 +106,10 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         });
     }, [room, conn, freezeInputs, getPlayerMe]);
 
+    const onLaunch = React.useCallback(() => {
+        //
+    }, []);
+
     if (error !== null) {
         return (
             <Container>
@@ -127,68 +132,22 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         );
     }
 
-    const players = [room.host, ...room.guests];
+    const playerMe = getPlayerMe()!;
 
     const roomTable = (
         <div>
-            <TableContainer component={Paper}>
-                <Table className={styles.Table}>
-                    <TableHead className={styles.TableHead}>
-                        <TableRow>
-                            <TableCell className={styles.TdReady}>Ready</TableCell>
-                            <TableCell>Player</TableCell>
-                            <TableCell>Race</TableCell>
-                            <TableCell>Team</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {players.map((next, idx) => {
-                            const isHost = room.host === next;
-                            const isMe = next.id === conn.myId;
-
-                            return (
-                                <TableRow key={idx}>
-                                    <TableCell align="center">
-                                        <Checkbox
-                                            color="primary"
-                                            checked={next.ready}
-                                            onChange={e => {
-                                                if (isMe)
-                                                    onChangeReady(e.target.checked);
-                                            }}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        {next.name}
-                                        {isMe && (<>
-                                            &nbsp;
-                                            <Chip label="YOU" color="secondary" />
-                                        </>)}
-                                        {isHost && (<>
-                                            &nbsp;
-                                            <Chip label="HOST" color="primary" />
-                                        </>)}
-                                    </TableCell>
-                                    <TableCell>{next.race}</TableCell>
-                                    <TableCell className={styles.TdTeam}>
-                                        <div>
-                                            <div className={styles.TeamLabel}>
-                                                {next.team !== null && 'Team ' + next.team}
-                                            </div>
-                                            {isMe && (<>
-                                                &nbsp;
-                                                <IconButton onClick={onChangeTeam}>
-                                                    <Autorenew />
-                                                </IconButton>
-                                            </>)}
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+            <RoomTable
+                myId={conn.myId}
+                room={room}
+                onChangeReady={onChangeReady}
+                onChangeTeam={onChangeTeam}
+            />
+            <RoomBottomPanel
+                myId={conn.myId}
+                room={room}
+                onChangeReady={() => onChangeReady(!playerMe.ready)}
+                onLaunch={() => onLaunch()}
+            />
         </div>
     );
 
