@@ -9,7 +9,7 @@
         "server/"
     ],
     "execMap": {
-        "ts": "ts-node -P tsconfig.server.json -r dotenv/config"
+        "ts": "ts-node -P server/tsconfig.json -r dotenv/config"
     },
     "env": {
         "NODE_ENV": "development"
