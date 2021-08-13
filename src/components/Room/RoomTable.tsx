@@ -36,9 +36,9 @@ const RoomTable: React.FC<RoomTableProps> = (props) => {
                                 <TableCell align="center">
                                     <Checkbox
                                         color="primary"
-                                        checked={next.ready}
+                                        checked={isHost || next.ready}
                                         onChange={e => {
-                                            if (isMe)
+                                            if (!isHost && isMe)
                                                 props.onChangeReady(e.target.checked);
                                         }}
                                     />
