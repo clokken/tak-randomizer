@@ -1,4 +1,5 @@
-import { Card, Container } from '@material-ui/core';
+import { Card, Container, Snackbar } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
@@ -18,16 +19,21 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const [error, setError] = React.useState<string | null>(null);
     const [freezeInputs, setFreezeInputs] = React.useState(false);
 
+    const showError = React.useCallback((msg: string) => {
+        console.error(msg);
+        setError(msg);
+    }, [setError]);
+
     const updateRoom = React.useCallback(() => { // TODO handle component dismounting during async?
         conn.emit<ReqRoomInfo, ResRoomInfo>('room-info', {roomId: conn.roomId}).then(res => {
             if (res.type === 'error') {
-                setError(res.reason);
+                showError(res.reason);
                 return;
             }
 
             setRoom(res.result);
         });
-    }, [conn]);
+    }, [conn, showError]);
 
     React.useEffect(() => {
         updateRoom();
@@ -81,7 +87,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         if (!playerMe) {
             // Impossible... how am I not in the room?
             // TODO error handle
-            return;
+            throw new Error(`Something very wrong happened! (onChangeTeam: i'm not in the room)`);
         }
 
         conn.emit<ReqChangeTeam, ResChangeTeam>('change-team', {
@@ -102,7 +108,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         if (!playerMe) {
             // Impossible... how am I not in the room?
             // TODO error handle
-            return;
+            throw new Error(`Something very wrong happened! (onChangeReady: i'm not in the room)`);
         }
 
         conn.emit<ReqChangeReady, ResChangeReady>('change-ready', {
@@ -115,25 +121,16 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const onLaunch = React.useCallback(() => {
         setFreezeInputs(true);
 
-        conn.emit<ReqLaunchRoom, ResLaunchRoom>('launch-room', {}).catch(err => {
+        conn.emit<ReqLaunchRoom, ResLaunchRoom>('launch-room', {}).then(result => {
+            if (result.type === 'error')
+                showError(result.reason);
+        }).catch(err => {
             // TODO handle err
             console.error(err);
         }).finally(() => {
             setFreezeInputs(false);
         });
-    }, []);
-
-    if (error !== null) {
-        return (
-            <Container>
-                <Card>
-                    Error:
-                    <br />
-                    {error}
-                </Card>
-            </Container>
-        );
-    }
+    }, [conn, showError]);
 
     if (room === null) {
         return (
@@ -164,13 +161,19 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         </div>
     );
 
-    return (
+    return (<>
         <Container>
             <Card>
                 {roomTable}
             </Card>
         </Container>
-    );
+
+        <Snackbar open={error !== null} autoHideDuration={6000} onClose={() => setError(null)}>
+            <Alert onClose={() => setError(null)} severity="error">
+                {error}
+            </Alert>
+        </Snackbar>
+    </>);
 };
 
 export default React.memo(GameRoom);
