@@ -1,6 +1,6 @@
 import * as SocketIo from 'socket.io';
-import { MsgCurrentRoomClosed, MsgPlayerChangedReady, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqCreateRoom, ReqJoinRoom, ReqLaunchRoom, ReqLeaveRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResCreateRoom, ResJoinRoom, ResLaunchRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
-import { ServerPlayer, ServerRoom, ServerRoomPlayer } from './types';
+import { MsgCurrentRoomClosed, MsgPlayerChangedReady, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqCreateRoom, ReqCurrentRoomHistory, ReqJoinRoom, ReqLaunchRoom, ReqLeaveRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResCreateRoom, ResCurrentRoomHistory, ResJoinRoom, ResLaunchRoom, ResLeaveRoom, ResRoomInfo } from '../src/lib/protocol/messages';
+import { ServerPlayer, ServerRandomizationResult, ServerRoom, ServerRoomPlayer } from './types';
 import { customAlphabet } from 'nanoid';
 import { RoomOptions } from '../src/lib/models/room-options';
 import { Player, RandomizationResult, Room, RoomPlayer } from '../src/lib/protocol/common';
@@ -210,9 +210,20 @@ export class MainServer {
                     return;
                 }
 
-                const result: RandomizationResult = {};
+                const result: ServerRandomizationResult = {
+                    when: new Date(),
+                    players: {},
+                };
+
                 allRoomPlayers.forEach((player, idx) => {
-                    result[player.socket.id] = { race: 'TODO #' + idx };
+                    const race = 'TODO #' + idx;
+
+                    result.players[player.socket.id] = {
+                        team: player.team,
+                        race: race,
+                    };
+
+                    player.race = race;
                     player.ready = false;
                 });
 
@@ -222,10 +233,24 @@ export class MainServer {
 
                 allRoomPlayers.forEach(player => {
                     this.notifyClient<MsgRoomLaunched>(player.socket, 'room-launched', {
-                        whenIso: new Date().toISOString(),
-                        result: result,
+                        result: this.serverRandResultToCommonRandResult(result),
                     });
                 });
+            });
+
+            this.handle<ReqCurrentRoomHistory, ResCurrentRoomHistory>(socket, 'room-history', async args => {
+                const room = currentPlayer.currentRoom;
+
+                if (room === null) {
+                    return { type: 'error', reason: `You're not in a room.`};
+                }
+
+                return {
+                    type: 'success',
+                    result: {
+                        history: room.history.map(this.serverRandResultToCommonRandResult),
+                    },
+                };
             });
         });
     }
@@ -319,6 +344,13 @@ export class MainServer {
         };
     }
 
+    private serverRandResultToCommonRandResult(result: ServerRandomizationResult): RandomizationResult {
+        return {
+            whenIso: result.when.toISOString(),
+            players: result.players,
+        };
+    }
+
     private createUniqueId() {
         for (let i = 0; i < 10; i++) { // 10 = limit number of trials
             const next = nanoid();
@@ -335,14 +367,10 @@ export class MainServer {
     }
 
     private createFreshRoomPlayer(player: ServerPlayer, roomOptions: RoomOptions): ServerRoomPlayer {
-        const firstRace = Object.entries(roomOptions.raceToggles).find(([ _, enabled ]) => {
-            return enabled;
-        })![0];
-
         return {
             ...player,
             ready: false,
-            race: firstRace,
+            race: '',
             team: null,
         };
     }

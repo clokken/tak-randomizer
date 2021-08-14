@@ -3,7 +3,8 @@ import { Alert } from '@material-ui/lab';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
-import { MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
+import { MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqCurrentRoomHistory, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResCurrentRoomHistory, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
+import HistoryDialog from './HistoryDialog';
 import ResultDialog from './ResultDialog';
 // import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
@@ -21,6 +22,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const [isClosed, setIsClosed] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [showResult, setShowResult] = React.useState<MsgRoomLaunched | null>(null);
+    const [showHistoryDialog, setShowHistoryDialog] = React.useState(false);
 
     const freezeInputs = _freezeInputs || isClosed;
 
@@ -138,7 +140,22 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const onCloseShowResult = React.useCallback(() => {
         updateRoom();
         setShowResult(null);
-    }, [updateRoom, setShowResult])
+    }, [updateRoom, setShowResult]);
+
+    const onClickHistoryCount = React.useCallback(() => {
+        setShowHistoryDialog(true);
+    }, [setShowHistoryDialog]);
+
+    const onCloseHistoryDialog = React.useCallback(() => setShowHistoryDialog(false), []);
+
+    const fetchHistory = React.useCallback(() => {
+        return conn.emit<ReqCurrentRoomHistory, ResCurrentRoomHistory>('room-history', {})
+            .then(result => {
+                if (result.type === 'error')
+                    return result.reason;
+                return result.result.history;
+            });
+    }, [conn]);
 
     if (room === null) {
         return (
@@ -166,7 +183,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 room={room}
                 roomIsClosed={isClosed}
                 onChangeReady={() => onChangeReady(!playerMe.ready)}
-                onClickHistoryCount={() => {}}
+                onClickHistoryCount={onClickHistoryCount}
                 onLaunch={() => onLaunch()}
             />
         </div>
@@ -188,6 +205,12 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             room={room}
             resultMsg={showResult}
             onClose={onCloseShowResult}
+        />
+
+        <HistoryDialog
+            open={showHistoryDialog}
+            onClose={onCloseHistoryDialog}
+            fetcherFunc={fetchHistory}
         />
 
         <Snackbar open={error !== null} autoHideDuration={4000} onClose={() => setError(null)}>

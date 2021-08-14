@@ -19,9 +19,13 @@ export type RoomPlayer = Player & {
     team: Team;
 };
 
-export type RandomizationResult = Record<string, { // key = ServerRoomPlayer::socket.id
-    race: string;
-}>;
+export type RandomizationResult = {
+    whenIso: string; // Date::toISOString();
+    players: Record<string, { // key = ServerRoomPlayer::socket.id
+        team: Team;
+        race: string;
+    }>;
+};
 
 export type Team = null | 1 | 2 | 3 | 4;
 export const Teams: Team[] = [null, 1, 2, 3, 4];

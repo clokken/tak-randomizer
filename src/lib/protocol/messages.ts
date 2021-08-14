@@ -103,8 +103,17 @@ export type ResLaunchRoom = CommonResponse<'OK'>;
 // -------------------------------------------------------------------------------------------------
 
 export type MsgRoomLaunched = {
-    whenIso: string; // Date::toISOString();
     result: RandomizationResult;
 };
+
+// -------------------------------------------------------------------------------------------------
+
+export type ReqCurrentRoomHistory = {
+    //
+};
+
+export type ResCurrentRoomHistory = CommonResponse<{
+    history: RandomizationResult[];
+}>;
 
 // -------------------------------------------------------------------------------------------------

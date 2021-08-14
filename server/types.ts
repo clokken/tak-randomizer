@@ -14,11 +14,19 @@ export type ServerRoom = {
     host: ServerRoomPlayer;
     guests: ServerRoomPlayer[];
     isFrozen: boolean; // players cannot change team or ready status
-    history: RandomizationResult[];
+    history: ServerRandomizationResult[];
 };
 
 export type ServerRoomPlayer = ServerPlayer & {
     ready: boolean;
     race: string;
     team: Team;
+};
+
+export type ServerRandomizationResult = {
+    when: Date;
+    players: Record<string, { // key = ServerRoomPlayer::socket.id
+        team: Team;
+        race: string;
+    }>;
 };

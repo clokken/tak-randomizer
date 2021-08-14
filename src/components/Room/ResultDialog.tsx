@@ -23,7 +23,7 @@ const ResultDialog: React.FC<ResultDialogProps> = (props) => {
     const content = props.resultMsg && (
         <table className={styles.Table}>
             <tbody>
-                {Object.entries(props.resultMsg.result).map(([id, result]) => (
+                {Object.entries(props.resultMsg.result.players).map(([id, result]) => (
                     <tr key={id}>
                         <td className={styles.TdName}>
                             {findPlayer(id)?.name}
