@@ -1,4 +1,4 @@
-import { Card, Container, Snackbar } from '@material-ui/core';
+import { Card, Container, Snackbar, Typography } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
@@ -17,9 +17,12 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const { connection: conn } = props;
 
     const [room, setRoom] = React.useState<Room | null>(null); // null = initial load
-    const [freezeInputs, setFreezeInputs] = React.useState(false);
+    const [_freezeInputs, setFreezeInputs] = React.useState(false);
+    const [isClosed, setIsClosed] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [showResult, setShowResult] = React.useState<MsgRoomLaunched | null>(null);
+
+    const freezeInputs = _freezeInputs || isClosed;
 
     const showError = React.useCallback((msg: string) => {
         console.error(msg);
@@ -48,7 +51,8 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 updateRoom();
             },
             'onCurrentRoomClosed': msg => {
-                updateRoom();
+                setIsClosed(true);
+                setError('Room has been closed.');
             },
             'onPlayerChangedTeam': msg => {
                 updateRoom();
@@ -153,12 +157,14 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             <RoomTable
                 myId={conn.myId}
                 room={room}
+                roomIsClosed={isClosed}
                 onChangeReady={onChangeReady}
                 onChangeTeam={onChangeTeam}
             />
             <RoomBottomPanel
                 myId={conn.myId}
                 room={room}
+                roomIsClosed={isClosed}
                 onChangeReady={() => onChangeReady(!playerMe.ready)}
                 onClickHistoryCount={() => {}}
                 onLaunch={() => onLaunch()}
@@ -168,6 +174,11 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
 
     return (<>
         <Container>
+            {isClosed && (
+                <Typography color="error" align="center" variant="h4">
+                    This room has been closed.
+                </Typography>
+            )}
             <Card>
                 {roomTable}
             </Card>

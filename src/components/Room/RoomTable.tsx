@@ -7,6 +7,7 @@ import styles from './RoomTable.module.scss';
 type RoomTableProps = {
     myId: string;
     room: Room;
+    roomIsClosed: boolean;
     onChangeReady: (checked: boolean) => void;
     onChangeTeam: () => void;
 };
@@ -61,7 +62,10 @@ const RoomTable: React.FC<RoomTableProps> = (props) => {
                                         </div>
                                         {isMe && (<>
                                             &nbsp;
-                                            <IconButton onClick={props.onChangeTeam}>
+                                            <IconButton
+                                                onClick={props.onChangeTeam}
+                                                disabled={props.roomIsClosed}
+                                            >
                                                 <Autorenew />
                                             </IconButton>
                                         </>)}

@@ -6,6 +6,7 @@ import styles from './RoomBottomPanel.module.scss';
 type RoomBottomPanelProps = {
     myId: string;
     room: Room;
+    roomIsClosed: boolean;
     onChangeReady: () => void;
     onClickHistoryCount: () => void;
     onLaunch: () => void;
@@ -68,7 +69,7 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
                     size="large"
                     type="submit"
                     variant="contained"
-                    disabled={!launchReadyEnabled}
+                    disabled={props.roomIsClosed || !launchReadyEnabled}
                     onClick={onClickLaunchReady}
                 >
                     {isHostMe
