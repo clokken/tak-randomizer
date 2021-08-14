@@ -219,6 +219,7 @@ export class MainServer {
                     const race = 'TODO #' + idx;
 
                     result.players[player.socket.id] = {
+                        name: player.name,
                         team: player.team,
                         race: race,
                     };

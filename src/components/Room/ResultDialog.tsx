@@ -12,21 +12,13 @@ type ResultDialogProps = {
 };
 
 const ResultDialog: React.FC<ResultDialogProps> = (props) => {
-    const allPlayers = React.useMemo(() => {
-        return [props.room.host, ...props.room.guests];
-    }, [props.room]);
-
-    const findPlayer = React.useCallback((id: string) => {
-        return allPlayers.find(p => p.id === id);
-    }, [allPlayers]);
-
     const content = props.resultMsg && (
         <table className={styles.Table}>
             <tbody>
                 {Object.entries(props.resultMsg.result.players).map(([id, result]) => (
                     <tr key={id}>
                         <td className={styles.TdName}>
-                            {findPlayer(id)?.name}
+                            {result.name}
                         </td>
                         <td className={styles.TdArrow}>
                             <div>

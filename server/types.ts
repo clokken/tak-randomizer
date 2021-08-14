@@ -26,6 +26,7 @@ export type ServerRoomPlayer = ServerPlayer & {
 export type ServerRandomizationResult = {
     when: Date;
     players: Record<string, { // key = ServerRoomPlayer::socket.id
+        name: string;
         team: Team;
         race: string;
     }>;

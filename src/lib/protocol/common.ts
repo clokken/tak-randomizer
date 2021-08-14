@@ -22,6 +22,7 @@ export type RoomPlayer = Player & {
 export type RandomizationResult = {
     whenIso: string; // Date::toISOString();
     players: Record<string, { // key = ServerRoomPlayer::socket.id
+        name: string;
         team: Team;
         race: string;
     }>;
