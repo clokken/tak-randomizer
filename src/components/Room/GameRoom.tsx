@@ -156,6 +156,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 myId={conn.myId}
                 room={room}
                 onChangeReady={() => onChangeReady(!playerMe.ready)}
+                onClickHistoryCount={() => {}}
                 onLaunch={() => onLaunch()}
             />
         </div>

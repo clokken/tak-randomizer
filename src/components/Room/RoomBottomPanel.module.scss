@@ -5,4 +5,23 @@
 
 .StatusWrapper {
     flex-grow: 1;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+
+    a {
+        padding: 4px 10px;
+        border-radius: 4px;
+        color: #fff;
+        background-color: #53ac53;
+        text-decoration: none;
+
+        &.Active {
+            background-color: #fd0c00;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
 }

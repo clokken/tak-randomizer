@@ -1,5 +1,5 @@
-import { Button } from '@material-ui/core';
 import React from 'react';
+import { Button, Box } from '@material-ui/core';
 import { Room } from '../../lib/protocol/common';
 import styles from './RoomBottomPanel.module.scss';
 
@@ -7,6 +7,7 @@ type RoomBottomPanelProps = {
     myId: string;
     room: Room;
     onChangeReady: () => void;
+    onClickHistoryCount: () => void;
     onLaunch: () => void;
 };
 
@@ -28,6 +29,8 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
         props.onChangeReady();
     };
 
+    const histCount = props.room.historyCount;
+
     return (
         <div className={styles.Root}>
             <div>
@@ -43,7 +46,21 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
             </div>
 
             <div className={styles.StatusWrapper}>
-
+                This room has been randomized&nbsp;
+                <a
+                    className={histCount > 0 ? styles.Active : ''}
+                    href={histCount > 0 ? '#' : undefined}
+                    onClick={e => {
+                        e.preventDefault();
+                        if (histCount !== 0)
+                            props.onClickHistoryCount();
+                    }}
+                >
+                    <Box fontFamily="Monospace">
+                        {histCount}
+                    </Box>
+                </a>
+                &nbsp;times.
             </div>
 
             <div>

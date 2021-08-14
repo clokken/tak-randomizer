@@ -216,6 +216,8 @@ export class MainServer {
                     player.ready = false;
                 });
 
+                room.history.push(result);
+
                 cb({ type: 'success', result: 'OK' });
 
                 allRoomPlayers.forEach(player => {
