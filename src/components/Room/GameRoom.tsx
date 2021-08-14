@@ -3,7 +3,8 @@ import { Alert } from '@material-ui/lab';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
 import { Room, Teams } from '../../lib/protocol/common';
-import { ReqChangeReady, ReqChangeTeam, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
+import { MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
+import ResultDialog from './ResultDialog';
 // import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
 import RoomTable from './RoomTable';
@@ -16,8 +17,9 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const { connection: conn } = props;
 
     const [room, setRoom] = React.useState<Room | null>(null); // null = initial load
-    const [error, setError] = React.useState<string | null>(null);
     const [freezeInputs, setFreezeInputs] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+    const [showResult, setShowResult] = React.useState<MsgRoomLaunched | null>(null);
 
     const showError = React.useCallback((msg: string) => {
         console.error(msg);
@@ -55,10 +57,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                 updateRoom();
             },
             'onRoomLaunched': msg => {
-                alert('Room has been launched!!!');
-                console.log(msg.whenIso);
-                console.log(msg.result);
-                updateRoom();
+                setShowResult(msg);
             },
         };
 
@@ -132,6 +131,11 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
         });
     }, [conn, showError]);
 
+    const onCloseShowResult = React.useCallback(() => {
+        updateRoom();
+        setShowResult(null);
+    }, [updateRoom, setShowResult])
+
     if (room === null) {
         return (
             <Container>
@@ -169,7 +173,13 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             </Card>
         </Container>
 
-        <Snackbar open={error !== null} autoHideDuration={6000} onClose={() => setError(null)}>
+        <ResultDialog
+            room={room}
+            resultMsg={showResult}
+            onClose={onCloseShowResult}
+        />
+
+        <Snackbar open={error !== null} autoHideDuration={4000} onClose={() => setError(null)}>
             <Alert onClose={() => setError(null)} severity="error">
                 {error}
             </Alert>

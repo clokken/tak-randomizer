@@ -9,14 +9,16 @@
     display: flex;
     align-items: center;
 
-    a {
+    span {
         padding: 4px 10px;
         border-radius: 4px;
+        text-align: center;
         color: #fff;
         background-color: #53ac53;
         text-decoration: none;
 
         &.Active {
+            cursor: pointer;
             background-color: #fd0c00;
 
             &:hover {

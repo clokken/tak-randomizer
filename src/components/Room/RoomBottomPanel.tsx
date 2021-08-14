@@ -47,9 +47,8 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
 
             <div className={styles.StatusWrapper}>
                 This room has been randomized&nbsp;
-                <a
+                <span
                     className={histCount > 0 ? styles.Active : ''}
-                    href={histCount > 0 ? '#' : undefined}
                     onClick={e => {
                         e.preventDefault();
                         if (histCount !== 0)
@@ -59,7 +58,7 @@ const RoomBottomPanel: React.FC<RoomBottomPanelProps> = (props) => {
                     <Box fontFamily="Monospace">
                         {histCount}
                     </Box>
-                </a>
+                </span>
                 &nbsp;times.
             </div>
 
