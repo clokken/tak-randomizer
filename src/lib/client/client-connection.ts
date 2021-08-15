@@ -2,7 +2,7 @@ import * as SocketIo from 'socket.io-client';
 import { RoomOptions } from '../models/room-options';
 import { MsgCurrentRoomClosed, MsgPlayerChangedReady, MsgPlayerChangedTeam, MsgPlayerJoinedRoom, MsgPlayerLeftRoom, MsgRoomLaunched, ReqCreateRoom, ReqJoinRoom, ResCreateRoom, ResJoinRoom } from '../protocol/messages';
 
-const serverPort = parseInt(process.env['REACT_APP_SERVER_PORT'] || '3003');
+// const serverPort = parseInt(process.env['REACT_APP_SERVER_PORT'] || '3003');
 
 export type ClientConnectionEventListener = {
     onPlayerJoinedRoom: (msg: MsgPlayerJoinedRoom) => void;
@@ -53,7 +53,7 @@ export class ClientConnection {
     static async createRoom(nickname: string, options: RoomOptions, onDisconnect: () => void):
         Promise<ClientConnection>
     {
-        const socket = SocketIo.io(`localhost:${serverPort}`, {
+        const socket = SocketIo.io({
             query: { name: nickname },
             reconnection: false,
         });
@@ -79,7 +79,7 @@ export class ClientConnection {
     static async joinRoom(nickname: string, roomId: string, onDisconnect: () => void):
         Promise<ClientConnection>
     {
-        const socket = SocketIo.io(`localhost:${serverPort}`, {
+        const socket = SocketIo.io({
             query: { name: nickname },
             reconnection: false,
         });

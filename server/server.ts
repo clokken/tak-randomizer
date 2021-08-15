@@ -4,7 +4,7 @@ import express from "express";
 import * as Path from 'path';
 import { MainServer } from './main';
 
-const serverPort = process.env['SERVER_PORT'] || '3000';
+const serverPort = process.env['PORT'] || '3000';
 
 const start = async () => {
     const app = express();
