@@ -25,7 +25,7 @@ const start = async () => {
         app.use(express.static('./build'));
 
         app.get('*', function(req, res) {
-          res.sendFile(Path.join('./build', 'index.html'));
+            res.sendFile(Path.resolve('./build/index.html'));
         });
     }
 
