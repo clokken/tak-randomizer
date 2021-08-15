@@ -6,6 +6,7 @@
         "noEmit": true,
         "moduleResolution": "Node",
         "module": "CommonJS",
+        "esModuleInterop": true
     },
     "include": [
         "."
