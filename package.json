@@ -34,7 +34,7 @@
     "web-vitals": "^1.1.0"
   },
   "scripts": {
-    "start": "ts-node -P server/tsconfig.json -r dotenv/config server/server.ts",
+    "start": "ts-node -P tsconfig.server.json -r dotenv/config server/server.ts",
     "client": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
