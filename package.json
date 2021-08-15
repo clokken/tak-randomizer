@@ -34,9 +34,9 @@
     "web-vitals": "^1.1.0"
   },
   "scripts": {
-    "start": "ts-node -P tsconfig.server.json -r dotenv/config server/server.ts",
+    "start": "node -r dotenv/config build_server/server/server.js",
     "client": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && tsc --project tsconfig.server.json",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "server": "nodemon --signal SIGKILL --config nodemon.json ./server/server.ts",
