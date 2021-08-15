@@ -35,12 +35,13 @@ const HostForm: React.FC<HostFormProps> = (props) => {
         Zhon: true,
         Creon: true,
     });
-    const [maps, setMaps] = React.useState<string[] | false>(false);
+    const [mapsString, setMapsString] = React.useState<string | false>(false);
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        const parsedMaps = maps && maps.map(map => map.trim()).filter(map => map.length);
+        const maps = (mapsString !== false)
+            && mapsString.split('\n').map(line => line.trim()).filter(line => line.length);
 
         const roomOptions: RoomOptions = {
             name: `${props.nickname}'s room.`,
@@ -51,7 +52,7 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             showIpFlags: showIpFlags,
             showIpHashes: showIpHashes,
             raceToggles: raceToggles,
-            randomizeMaps: (parsedMaps !== false) ? parsedMaps : undefined,
+            randomizeMaps: (maps !== false) ? maps : undefined,
         };
 
         props.onSubmitForm(roomOptions);
@@ -230,7 +231,7 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             </Grid>
             <Grid item xs={12}>
                 <MapsSelector
-                    setMaps={setMaps}
+                    setMapsString={setMapsString}
                 />
             </Grid>
         </Grid>
@@ -264,7 +265,7 @@ const HostForm: React.FC<HostFormProps> = (props) => {
 };
 
 export const MapsSelector: React.FC<{
-    setMaps: (maps: string[] | false) => void;
+    setMapsString: (maps: string | false) => void;
 }> = React.memo((props) => {
     const [enabled, setEnabled] = React.useState(false);
     const [text, setText] = React.useState('');
@@ -290,7 +291,11 @@ export const MapsSelector: React.FC<{
                         variant="outlined"
                         label="List of map names (one per line)"
                         value={text}
-                        onChange={e => setText(e.target.value)}
+                        onChange={e => {
+                            const text = e.target.value;
+                            setText(text);
+                            props.setMapsString(text);
+                        }}
                     />
                 </Grid>
                 <Hidden xsDown>
@@ -298,9 +303,9 @@ export const MapsSelector: React.FC<{
                         <StyledDropzone
                             onDropAccepted={files => {
                                 if (files) {
-                                    const maps = files.map(f => f.name);
-                                    props.setMaps(maps);
-                                    setText(maps.join('\n'));
+                                    const mapsString = files.map(f => f.name).join('\n');
+                                    props.setMapsString(mapsString);
+                                    setText(mapsString);
                                 }
                             }}
                         />
@@ -321,7 +326,7 @@ export const MapsSelector: React.FC<{
                             onChange={e => {
                                 const enabled = e.target.checked;
                                 setEnabled(enabled);
-                                props.setMaps(enabled ? [] : false);
+                                props.setMapsString(enabled ? '' : false);
                             }}
                         />
                     }
