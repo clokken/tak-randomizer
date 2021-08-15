@@ -18,11 +18,21 @@ const Header: React.FC<HeaderProps> = (props) => {
                     New Room
                 </Button>
 
-                <Button color="inherit" className={styles.Button}>
+                <Button
+                    color="inherit"
+                    className={styles.Button}
+                    href="https://discord.gg/r9ArNWe"
+                    target="_blank"
+                >
                     Discord
                 </Button>
 
-                <Button color="inherit" className={styles.Button}>
+                <Button
+                    color="inherit"
+                    className={styles.Button}
+                    href="https://github.com/clokken/tak-randomizer"
+                    target="_blank"
+                >
                     About
                 </Button>
             </Toolbar>
