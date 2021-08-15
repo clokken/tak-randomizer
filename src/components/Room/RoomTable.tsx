@@ -2,6 +2,7 @@ import { Checkbox, Chip, IconButton, Table, TableBody, TableCell, TableContainer
 import { Autorenew } from '@material-ui/icons';
 import React from 'react';
 import { Room } from '../../lib/protocol/common';
+import RaceColor from '../Common/RaceColor';
 import styles from './RoomTable.module.scss';
 
 type RoomTableProps = {
@@ -54,7 +55,11 @@ const RoomTable: React.FC<RoomTableProps> = (props) => {
                                         <Chip label="HOST" color="primary" />
                                     </>)}
                                 </TableCell>
-                                <TableCell>{next.race}</TableCell>
+                                <TableCell>
+                                    <RaceColor race={next.race} strong>
+                                        {next.race}
+                                    </RaceColor>
+                                </TableCell>
                                 <TableCell className={styles.TdTeam}>
                                     <div>
                                         <div className={styles.TeamLabel}>

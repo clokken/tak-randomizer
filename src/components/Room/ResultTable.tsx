@@ -1,6 +1,7 @@
 import { TrendingFlat } from '@material-ui/icons';
 import React from 'react';
 import { RandomizationResult } from '../../lib/protocol/common';
+import RaceColor from '../Common/RaceColor';
 import styles from './ResultTable.module.scss';
 
 type ResultTableProps = {
@@ -25,7 +26,9 @@ const ResultTable: React.FC<ResultTableProps> = (props) => {
                             </div>
                         </td>
                         <td className={styles.TdRace}>
-                            {result.race}
+                            <RaceColor race={result.race} strong>
+                                {result.race}
+                            </RaceColor>
                         </td>
                     </tr>
                 ))}
