@@ -1,4 +1,4 @@
-import { Card, Container, Snackbar, Typography } from '@material-ui/core';
+import { Button, Card, Container, Snackbar, Typography } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import React from 'react';
 import { ClientConnection, ClientConnectionEventListener } from '../../lib/client/client-connection';
@@ -8,6 +8,7 @@ import HistoryDialog from './HistoryDialog';
 import ResultDialog from './ResultDialog';
 // import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
+import RoomOptionsDrawer from './RoomOptionsDrawer';
 import RoomTable from './RoomTable';
 
 type GameRoomProps = {
@@ -23,6 +24,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const [error, setError] = React.useState<string | null>(null);
     const [showResult, setShowResult] = React.useState<MsgRoomLaunched | null>(null);
     const [showHistoryDialog, setShowHistoryDialog] = React.useState(false);
+    const [showRoomOptions, setShowRoomOptions] = React.useState(false);
 
     const freezeInputs = _freezeInputs || isClosed;
 
@@ -196,9 +198,24 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
                     This room has been closed.
                 </Typography>
             )}
+
+            <Button
+                onClick={() => setShowRoomOptions(true)}
+                variant="outlined"
+                style={{ marginBottom: 10 }}
+            >
+                Show Room Options
+            </Button>
+
             <Card>
                 {roomTable}
             </Card>
+
+            <RoomOptionsDrawer
+                room={room}
+                showRoomOptions={showRoomOptions}
+                setShowRoomOptions={setShowRoomOptions}
+            />
         </Container>
 
         <ResultDialog

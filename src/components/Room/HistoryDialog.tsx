@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './HistoryDialog.module.scss';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress, Typography, Chip, DialogContentText } from '@material-ui/core';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress, Chip, DialogContentText } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import { RandomizationResult } from '../../lib/protocol/common';
 import Moment from 'moment';
