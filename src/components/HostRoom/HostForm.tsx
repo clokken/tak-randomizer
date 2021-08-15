@@ -1,8 +1,8 @@
-import { Button, Card, CardActions, CardContent, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Grid, Input, InputLabel, makeStyles, MenuItem, Radio, RadioGroup, Select, Typography } from '@material-ui/core';
+import { Button, Card, CardActions, CardContent, Checkbox, Collapse, FormControl, FormControlLabel, FormGroup, FormHelperText, FormLabel, Grid, Hidden, Input, InputLabel, makeStyles, MenuItem, Radio, RadioGroup, Select, TextField, Typography } from '@material-ui/core';
 import React from 'react';
 import { Races } from '../../lib/models/races';
 import { RoomOptions, RoomOptionsCheckboxes, RoomOptionsModes } from '../../lib/models/room-options';
-// import styles from './HostForm.module.scss';
+import { StyledDropzone } from '../Common/StyledDropzone';
 
 type HostFormProps = {
     nickname: string;
@@ -35,9 +35,12 @@ const HostForm: React.FC<HostFormProps> = (props) => {
         Zhon: true,
         Creon: true,
     });
+    const [maps, setMaps] = React.useState<string[] | false>(false);
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const parsedMaps = maps && maps.map(map => map.trim()).filter(map => map.length);
 
         const roomOptions: RoomOptions = {
             name: `${props.nickname}'s room.`,
@@ -48,7 +51,10 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             showIpFlags: showIpFlags,
             showIpHashes: showIpHashes,
             raceToggles: raceToggles,
+            randomizeMaps: (parsedMaps !== false) ? parsedMaps : undefined,
         };
+
+        console.log(roomOptions);
 
         props.onSubmitForm(roomOptions);
     };
@@ -224,6 +230,11 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             <Grid item sm={12}>
                 {raceTogglesInput}
             </Grid>
+            <Grid item xs={12}>
+                <MapsSelector
+                    setMaps={setMaps}
+                />
+            </Grid>
         </Grid>
     );
 
@@ -253,5 +264,75 @@ const HostForm: React.FC<HostFormProps> = (props) => {
         </form>
     );
 };
+
+export const MapsSelector: React.FC<{
+    setMaps: (maps: string[] | false) => void;
+}> = React.memo((props) => {
+    const [enabled, setEnabled] = React.useState(false);
+    const [text, setText] = React.useState('');
+
+    // TODO memoize TextField and StyledDropzone
+
+    const listInput = (
+        <Collapse in={enabled}>
+            <FormHelperText>
+                Type the name of each map to randomize (one per line).
+                <br />
+                <Hidden xsDown>
+                    Alternatively, drag & drop the map files into the box to the right.
+                    <br />
+                </Hidden>
+            </FormHelperText>
+            <Grid container spacing={2} alignItems="stretch" style={{marginTop: 10}}>
+                <Grid item xs={12} sm={9}>
+                    <TextField
+                        multiline={true}
+                        minRows={4}
+                        fullWidth
+                        variant="outlined"
+                        label="List of map names (one per line)"
+                        value={text}
+                        onChange={e => setText(e.target.value)}
+                    />
+                </Grid>
+                <Hidden xsDown>
+                    <Grid item sm={3}>
+                        <StyledDropzone
+                            setAcceptedFiles={files => {
+                                if (files) {
+                                    const maps = files.map(f => f.name);
+                                    props.setMaps(maps);
+                                    setText(maps.join('\n'));
+                                }
+                            }}
+                        />
+                    </Grid>
+                </Hidden>
+            </Grid>
+        </Collapse>
+    );
+
+    return (
+        <FormControl component="fieldset" fullWidth>
+            <FormLabel component="legend">Randomize Maps</FormLabel>
+            <FormGroup>
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={enabled}
+                            onChange={e => {
+                                const enabled = e.target.checked;
+                                setEnabled(enabled);
+                                props.setMaps(enabled ? [] : false);
+                            }}
+                        />
+                    }
+                    label="Enabled"
+                />
+            </FormGroup>
+            {listInput}
+        </FormControl>
+    );
+});
 
 export default React.memo(HostForm);

@@ -69,6 +69,21 @@ const RoomOptionsDrawer: React.FC<RoomOptionsDrawerProps> = (props) => {
                         </ul>
                     </span>
                 </div>
+
+                {room.options.randomizeMaps && (
+                    <div className={styles.Option}>
+                        <span className={styles.Title}>Randomize Maps:</span>
+                        <span className={styles.Label}>
+                            <ul>
+                                {room.options.randomizeMaps.map((map, idx) => (
+                                    <li key={idx}>
+                                        - {map}
+                                    </li>
+                                ))}
+                            </ul>
+                        </span>
+                    </div>
+                )}
             </div>
         </SwipeableDrawer>
     );

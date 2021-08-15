@@ -9,6 +9,7 @@ export type RoomOptions = {
     showIpHashes: boolean;
     showIpFlags: boolean;
     raceToggles: Record<Race, boolean>;
+    randomizeMaps?: string[];
 };
 
 // -------------------------------------------------------------------------------------------------
