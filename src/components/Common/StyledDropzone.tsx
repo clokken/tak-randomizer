@@ -32,7 +32,7 @@ const Container = styled.div`
 `;
 
 export const StyledDropzone: React.FC<{
-    setAcceptedFiles: (acceptedFiles: File[]) => void;
+    onDropAccepted: (acceptedFiles: File[]) => void;
 }> = (props) => {
     const {
         getRootProps,
@@ -40,12 +40,9 @@ export const StyledDropzone: React.FC<{
         isDragActive,
         isDragAccept,
         isDragReject,
-        acceptedFiles,
-    } = useDropzone();
-
-    React.useEffect(() => {
-        props.setAcceptedFiles(acceptedFiles);
-    }, [props, acceptedFiles]);
+    } = useDropzone({
+        onDropAccepted: props.onDropAccepted
+    });
 
     return (
         <div className="container">

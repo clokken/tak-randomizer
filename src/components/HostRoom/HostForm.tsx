@@ -54,8 +54,6 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             randomizeMaps: (parsedMaps !== false) ? parsedMaps : undefined,
         };
 
-        console.log(roomOptions);
-
         props.onSubmitForm(roomOptions);
     };
 
@@ -298,7 +296,7 @@ export const MapsSelector: React.FC<{
                 <Hidden xsDown>
                     <Grid item sm={3}>
                         <StyledDropzone
-                            setAcceptedFiles={files => {
+                            onDropAccepted={files => {
                                 if (files) {
                                     const maps = files.map(f => f.name);
                                     props.setMaps(maps);
