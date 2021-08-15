@@ -25,9 +25,16 @@ const ResultDialog: React.FC<ResultDialogProps> = (props) => {
             </DialogTitle>
             <DialogContent>
                 <div className={styles.Content}>
-                    {props.resultMsg && (
+                    {props.resultMsg && (<>
                         <ResultTable result={props.resultMsg.result} />
-                    )}
+
+                        {props.resultMsg.result.map && (
+                            <div className={styles.Map}>
+                                <b>Map:</b> {props.resultMsg?.result.map}
+                            </div>
+                        )}
+                    </>)}
+
                 </div>
             </DialogContent>
             <DialogActions>

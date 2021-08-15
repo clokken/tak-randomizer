@@ -6,6 +6,7 @@ import { RoomOptions } from '../src/lib/models/room-options';
 import { Player, RandomizationResult, Room, RoomPlayer } from '../src/lib/protocol/common';
 import { randomize, Mode as RandMode } from './randomizer';
 import { Race } from '../src/lib/models/races';
+import { randomItem } from './utils';
 
 const roomIdLength = process.env['ROOM_ID_LENGTH'] || '10';
 
@@ -218,9 +219,13 @@ export class MainServer {
                     return;
                 }
 
+                const randomMap = room.options.randomizeMaps
+                    && randomItem(room.options.randomizeMaps);
+
                 const result: ServerRandomizationResult = {
                     when: new Date(),
                     players: {},
+                    map: randomMap,
                 };
 
                 const enabledOptions = Object.entries(room.options.raceToggles)
@@ -375,6 +380,7 @@ export class MainServer {
         return {
             whenIso: result.when.toISOString(),
             players: result.players,
+            map: result.map,
         };
     }
 

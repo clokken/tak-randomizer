@@ -56,6 +56,12 @@ const HistoryDialog: React.FC<HistoryDialogProps> = (props) => {
                             />
 
                             <ResultTable result={frame} />
+
+                            {frame.map && (
+                                <div>
+                                    <b>Map:</b> {frame.map}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -80,7 +86,7 @@ const HistoryDialog: React.FC<HistoryDialogProps> = (props) => {
                 <DialogContentText>
                     (Ordered from newest to oldest)
                 </DialogContentText>
-                <div className={'styles.Content'}>
+                <div>
                     {content}
                 </div>
             </DialogContent>

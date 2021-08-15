@@ -30,4 +30,5 @@ export type ServerRandomizationResult = {
         team: Team;
         race: string;
     }>;
+    map?: string;
 };

@@ -26,6 +26,7 @@ export type RandomizationResult = {
         team: Team;
         race: string;
     }>;
+    map?: string;
 };
 
 export type Team = null | 1 | 2 | 3 | 4;

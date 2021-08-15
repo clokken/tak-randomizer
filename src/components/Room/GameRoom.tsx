@@ -6,7 +6,7 @@ import { Room, Teams } from '../../lib/protocol/common';
 import { MsgRoomLaunched, ReqChangeReady, ReqChangeTeam, ReqCurrentRoomHistory, ReqLaunchRoom, ReqRoomInfo, ResChangeReady, ResChangeTeam, ResCurrentRoomHistory, ResLaunchRoom, ResRoomInfo } from '../../lib/protocol/messages';
 import HistoryDialog from './HistoryDialog';
 import ResultDialog from './ResultDialog';
-// import styles from './GameRoom.module.scss';
+import styles from './GameRoom.module.scss';
 import RoomBottomPanel from './RoomBottomPanel';
 import RoomOptionsDrawer from './RoomOptionsDrawer';
 import RoomTable from './RoomTable';
@@ -23,6 +23,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
     const [isClosed, setIsClosed] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
     const [showResult, setShowResult] = React.useState<MsgRoomLaunched | null>(null);
+    const [lastMap, setLastMap] = React.useState<string | null>(null);
     const [showHistoryDialog, setShowHistoryDialog] = React.useState(false);
     const [showRoomOptions, setShowRoomOptions] = React.useState(false);
 
@@ -66,6 +67,7 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             },
             'onRoomLaunched': msg => {
                 setShowResult(msg);
+                setLastMap(msg.result.map ?? null);
             },
         };
 
@@ -210,6 +212,12 @@ const GameRoom: React.FC<GameRoomProps> = (props) => {
             <Card>
                 {roomTable}
             </Card>
+
+            {lastMap && (
+                <div className={styles.Map}>
+                    <b>Map:</b> {lastMap}
+                </div>
+            )}
 
             <RoomOptionsDrawer
                 room={room}

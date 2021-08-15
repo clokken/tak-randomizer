@@ -1,4 +1,5 @@
 import * as Lodash from "lodash";
+import { randomItem } from "./utils";
 
 export type Mode = 'full' | 'diff_within_group' | 'diff_all';
 
@@ -116,9 +117,4 @@ export function randomize<Option>(config: {
     }
 
     throw 'Unreachable';
-}
-
-function randomItem<T>(array: T[]): T {
-    const index = Math.floor(Math.random() * array.length);
-    return array[index];
 }
