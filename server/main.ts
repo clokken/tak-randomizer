@@ -4,10 +4,18 @@ import { ServerPlayer, ServerRandomizationResult, ServerRoom, ServerRoomPlayer }
 import { customAlphabet } from 'nanoid';
 import { RoomOptions } from '../src/lib/models/room-options';
 import { Player, RandomizationResult, Room, RoomPlayer } from '../src/lib/protocol/common';
+import { randomize, Mode as RandMode } from './randomizer';
+import { Race } from '../src/lib/models/races';
 
 const roomIdLength = process.env['ROOM_ID_LENGTH'] || '10';
 
 const nanoid = customAlphabet('1234567890abcdef', parseInt(roomIdLength));
+
+const ModeMap: Record<RoomOptions['mode'], RandMode> = {
+    'fully-random': 'full',
+    'avoid-repeated-teammates': 'diff_within_group',
+    'avoid-repeated-all': 'diff_all',
+};
 
 // -------------------------------------------------------------------------------------------------
 
@@ -215,16 +223,34 @@ export class MainServer {
                     players: {},
                 };
 
+                const enabledOptions = Object.entries(room.options.raceToggles)
+                    .filter(([race, enabled]) => enabled)
+                    .map(([race, enabled]) => race as Race);
+
+                const randomized = randomize<Race>({
+                    subjects: allRoomPlayers.map((player, idx) => ({
+                        id: player.socket.id,
+                        groupId: player.team === null ? (-idx) : player.team,
+                    })),
+                    mode: ModeMap[room.options.mode],
+                    mirrorGroups: room.options.mirrorTeams,
+                    enabledOptions: enabledOptions,
+                });
+
                 allRoomPlayers.forEach((player, idx) => {
-                    const race = 'TODO #' + idx;
+                    const randomizedPlayer = randomized.find(r => r.id === player.socket.id);
+
+                    if (!randomizedPlayer) {
+                        throw `Failed to randomize player with id: ${player.socket.id} (this should be impossible)`;
+                    }
 
                     result.players[player.socket.id] = {
                         name: player.name,
                         team: player.team,
-                        race: race,
+                        race: randomizedPlayer.result,
                     };
 
-                    player.race = race;
+                    player.race = randomizedPlayer.result;
                     player.ready = false;
                 });
 

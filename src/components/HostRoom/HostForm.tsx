@@ -26,7 +26,7 @@ const HostForm: React.FC<HostFormProps> = (props) => {
     const [randomMode, setRandomMode] = React.useState<RoomOptions['mode']>('fully-random');
     const [mirrorTeams, setMirrorTeams] = React.useState(false);
     // const [showIps, setShowIps] = React.useState(false);
-    const [showIpHashes, setShowIpHashes] = React.useState(true);
+    const [showIpHashes, setShowIpHashes] = React.useState(false);
     const [showIpFlags, setShowIpFlags] = React.useState(false);
     const [raceToggles, setRaceToggles] = React.useState<RoomOptions['raceToggles']>({
         Aramon: true,
@@ -218,9 +218,9 @@ const HostForm: React.FC<HostFormProps> = (props) => {
             <Grid item sm={12}>
                 {mirrorInput}
             </Grid>
-            <Grid item sm={12}>
+            { false && <Grid item sm={12}>
                 {ipOptionsInput}
-            </Grid>
+            </Grid> }
             <Grid item sm={12}>
                 {raceTogglesInput}
             </Grid>
