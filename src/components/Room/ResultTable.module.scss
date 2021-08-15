@@ -1,0 +1,41 @@
+.Table {
+    width: 100%;
+    border-spacing: 0;
+
+    td {
+        padding: 10px 6px;
+        vertical-align: middle;
+    }
+
+    tr:nth-child(even) {
+        // background-color: #ddd;
+        td {
+            border-top: 1px solid #ddd;
+        }
+    }
+
+    .TdName {
+        width: 24.5%;
+    }
+
+    .TdTeam {
+        width: 24.5%;
+        white-space: nowrap;
+    }
+
+    .TdArrow {
+        width: 1%;
+        color: #b9b9b9;
+
+        div {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .TdRace {
+        width: 50%;
+        white-space: nowrap;
+        text-align: right;
+    }
+}

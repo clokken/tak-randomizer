@@ -1,8 +1,12 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress } from '@material-ui/core';
-import { Alert } from '@material-ui/lab';
 import React from 'react';
+import styles from './HistoryDialog.module.scss';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, CircularProgress, Typography, Chip, DialogContentText } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
 import { RandomizationResult } from '../../lib/protocol/common';
-// import styles from './HistoryDialog.module.scss';
+import Moment from 'moment';
+import { AccessTime } from '@material-ui/icons';
+import ResultTable from './ResultTable';
+import Lodash from 'lodash';
 
 type HistoryDialogProps = {
     open: boolean;
@@ -27,7 +31,7 @@ const HistoryDialog: React.FC<HistoryDialogProps> = (props) => {
             if (typeof result === 'string')
                 setError(result);
             else
-                setHistory(result);
+                setHistory(Lodash.reverse(result));
         });
 
         return () => {
@@ -40,7 +44,21 @@ const HistoryDialog: React.FC<HistoryDialogProps> = (props) => {
     ) : (
         history ? (
             <div>
-                {JSON.stringify(history, null, 4)}
+                {history.map((frame, idx) => {
+                    const momentDate = Moment(new Date(frame.whenIso));
+
+                    return (
+                        <div key={idx} className={styles.Frame}>
+                            <Chip
+                                icon={<AccessTime />}
+                                label={`${momentDate.format('hh:mm:ss')} (${momentDate.fromNow()})`}
+                                title={momentDate.format('YYYY-MM-DD hh:mm:ss')}
+                            />
+
+                            <ResultTable result={frame} />
+                        </div>
+                    );
+                })}
             </div>
         ) : (
             <CircularProgress />
@@ -53,12 +71,15 @@ const HistoryDialog: React.FC<HistoryDialogProps> = (props) => {
             onClose={props.onClose}
             aria-labelledby="alert-dialog-title"
             aria-describedby="alert-dialog-description"
-            maxWidth="md"
+            maxWidth="lg"
         >
             <DialogTitle id="alert-dialog-title">
                 Randomization Result!
             </DialogTitle>
             <DialogContent>
+                <DialogContentText>
+                    (Ordered from newest to oldest)
+                </DialogContentText>
                 <div className={'styles.Content'}>
                     {content}
                 </div>

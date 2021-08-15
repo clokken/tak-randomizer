@@ -1,0 +1,14 @@
+.Frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    border: 1px dashed #aaa;
+    padding: 10px;
+    margin-bottom: 20px;
+
+    table {
+        min-width: 500px;
+        font-size: 1.10rem;
+    }
+}
