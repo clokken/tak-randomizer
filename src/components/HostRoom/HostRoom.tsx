@@ -111,7 +111,7 @@ const HostRoom: React.FC = () => {
     if (connection === null) {
         return (
             <Container>
-                {nicknameHeader}
+                {false && nicknameHeader}
                 <Grid container justifyContent="center">
                     <Grid item xs={12} sm={9}>
                         <HostForm
